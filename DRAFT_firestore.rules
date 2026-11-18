@@ -1,0 +1,410 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Pillar 4.1: Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Global Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'vascotoru94@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Validation Blueprints (Pillar 2)
+    function isValidUserAccount(data, userId) {
+      return data.keys().hasAll([
+        'uid', 'displayName', 'plan', 'preferredUnit', 'preferredLang',
+        'chromaTheme', 'lastActiveAt', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid', 'displayName', 'plan', 'preferredUnit', 'preferredLang',
+        'chromaTheme', 'lastActiveAt', 'createdAt', 'updatedAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid == userId &&
+      data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+      data.plan is string && data.plan in ['free', 'pro_monthly', 'pro_annual'] &&
+      data.preferredUnit is string && data.preferredUnit in ['metric', 'imperial'] &&
+      data.preferredLang is string && data.preferredLang in ['en', 'es', 'fr', 'pt', 'de', 'ja'] &&
+      data.chromaTheme is string && data.chromaTheme in ['aurora', 'prism', 'solar', 'oceanic'] &&
+      data.lastActiveAt is timestamp &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidUserPrivateInfo(data, userId) {
+      return data.keys().hasAll(['uid', 'fullName', 'email', 'phone', 'updatedAt']) &&
+      data.keys().hasOnly(['uid', 'fullName', 'email', 'phone', 'updatedAt']) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid == userId &&
+      data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 80 &&
+      data.email is string && data.email.size() >= 3 && data.email.size() <= 160 &&
+      data.phone is string && data.phone.size() <= 32 &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidSavedLocation(data, userId) {
+      return data.keys().hasAll([
+        'uid', 'name', 'country', 'admin1', 'latitude', 'longitude', 'timezone', 'isPrimary', 'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid', 'name', 'country', 'admin1', 'latitude', 'longitude', 'timezone', 'isPrimary', 'createdAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid == userId &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+      data.country is string && data.country.size() >= 1 && data.country.size() <= 80 &&
+      data.admin1 is string && data.admin1.size() <= 100 &&
+      data.latitude is number && data.latitude >= -90 && data.latitude <= 90 &&
+      data.longitude is number && data.longitude >= -180 && data.longitude <= 180 &&
+      data.timezone is string && data.timezone.size() >= 1 && data.timezone.size() <= 60 &&
+      data.isPrimary is bool &&
+      data.createdAt is timestamp;
+    }
+
+    function isValidWeatherAlertRule(data, userId) {
+      return data.keys().hasAll([
+        'uid', 'locationName', 'latitude', 'longitude', 'metric', 'threshold', 'enabled', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid', 'locationName', 'latitude', 'longitude', 'metric', 'threshold', 'enabled', 'createdAt', 'updatedAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid == userId &&
+      data.locationName is string && data.locationName.size() >= 1 && data.locationName.size() <= 100 &&
+      data.latitude is number && data.latitude >= -90 && data.latitude <= 90 &&
+      data.longitude is number && data.longitude >= -180 && data.longitude <= 180 &&
+      data.metric is string && data.metric in ['rain_prob', 'wind_speed', 'temp_high', 'temp_low', 'storm'] &&
+      data.threshold is number && data.threshold >= -100 && data.threshold <= 500 &&
+      data.enabled is bool &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidSubscription(data) {
+      return data.keys().hasAll(['userId', 'planId', 'amountUsd', 'billingCycle', 'status', 'createdAt', 'updatedAt']) &&
+      data.keys().hasOnly(['userId', 'planId', 'amountUsd', 'billingCycle', 'status', 'createdAt', 'updatedAt']) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+      data.planId is string && data.planId in ['pro_monthly', 'pro_annual', 'storm_radar_pack', 'ad_free_pass'] &&
+      data.amountUsd is number && data.amountUsd >= 0 && data.amountUsd <= 1000 &&
+      data.billingCycle is string && data.billingCycle in ['monthly', 'annual', 'one_time'] &&
+      data.status is string && data.status in ['active', 'cancelled'] &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidAdCampaign(data) {
+      return data.keys().hasAll([
+        'sponsorName', 'headline', 'description', 'ctaLabel', 'targetUrl',
+        'cpmUsd', 'cpcUsd', 'impressions', 'clicks', 'active', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'sponsorName', 'headline', 'description', 'ctaLabel', 'targetUrl',
+        'cpmUsd', 'cpcUsd', 'impressions', 'clicks', 'active', 'createdAt', 'updatedAt'
+      ]) &&
+      data.sponsorName is string && data.sponsorName.size() >= 1 && data.sponsorName.size() <= 80 &&
+      data.headline is string && data.headline.size() >= 1 && data.headline.size() <= 120 &&
+      data.description is string && data.description.size() >= 1 && data.description.size() <= 240 &&
+      data.ctaLabel is string && data.ctaLabel.size() >= 1 && data.ctaLabel.size() <= 40 &&
+      data.targetUrl is string && data.targetUrl.size() >= 1 && data.targetUrl.size() <= 240 &&
+      data.cpmUsd is number && data.cpmUsd >= 0 && data.cpmUsd <= 500 &&
+      data.cpcUsd is number && data.cpcUsd >= 0 && data.cpcUsd <= 50 &&
+      data.impressions is number && data.impressions >= 0 &&
+      data.clicks is number && data.clicks >= 0 &&
+      data.active is bool &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidRevenueEvent(data) {
+      return data.keys().hasAll(['source', 'label', 'amountUsd', 'userId', 'createdAt']) &&
+      data.keys().hasOnly(['source', 'label', 'amountUsd', 'userId', 'createdAt']) &&
+      data.source is string && data.source in ['subscription', 'ad_impression', 'ad_click', 'sponsorship', 'paid_addon'] &&
+      data.label is string && data.label.size() >= 1 && data.label.size() <= 120 &&
+      data.amountUsd is number && data.amountUsd >= 0 && data.amountUsd <= 5000 &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+      data.createdAt is timestamp;
+    }
+
+    function isValidAppSettings(data) {
+      return data.keys().hasAll([
+        'adsEnabled', 'proMonthlyPrice', 'proAnnualPrice',
+        'defaultForecastDays', 'announcement', 'maintenanceMode', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'adsEnabled', 'proMonthlyPrice', 'proAnnualPrice',
+        'defaultForecastDays', 'announcement', 'maintenanceMode', 'updatedAt'
+      ]) &&
+      data.adsEnabled is bool &&
+      data.proMonthlyPrice is number && data.proMonthlyPrice >= 0 && data.proMonthlyPrice <= 500 &&
+      data.proAnnualPrice is number && data.proAnnualPrice >= 0 && data.proAnnualPrice <= 2000 &&
+      data.defaultForecastDays is number && data.defaultForecastDays >= 3 && data.defaultForecastDays <= 16 &&
+      data.announcement is string && data.announcement.size() <= 240 &&
+      data.maintenanceMode is bool &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidAdminRecord(data, adminId) {
+      return data.keys().hasAll(['uid', 'email', 'addedAt']) &&
+      data.keys().hasOnly(['uid', 'email', 'addedAt']) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid == adminId &&
+      data.email is string && data.email.size() >= 3 && data.email.size() <= 160 &&
+      data.addedAt is timestamp;
+    }
+
+    // Connection test document (read-only)
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Users collection (non-PII operational profile)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isValidId(userId) &&
+        isOwner(userId) &&
+        isValidUserAccount(incoming(), userId) &&
+        incoming().plan == 'free' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        incoming().lastActiveAt == request.time;
+
+      allow update: if isValidId(userId) &&
+        isValidUserAccount(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'preferredUnit', 'preferredLang', 'chromaTheme', 'lastActiveAt', 'updatedAt'])
+          ) ||
+          (
+            isOwner(userId) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['plan', 'updatedAt'])
+          )
+        );
+
+      allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+
+      // Strictly Isolated PII (Pillar 6)
+      match /private/info {
+        allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+        allow list: if false;
+
+        allow create: if isValidId(userId) &&
+          (isOwner(userId) || isAdmin()) &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          isValidUserPrivateInfo(incoming(), userId) &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isValidId(userId) &&
+          isValidUserPrivateInfo(incoming(), userId) &&
+          incoming().uid == existing().uid &&
+          incoming().updatedAt == request.time && (
+            isAdmin() ||
+            (
+              isOwner(userId) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'email', 'phone', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      }
+
+      // Saved Worldwide Locations
+      match /locations/{locationId} {
+        allow get: if isValidId(userId) && isValidId(locationId) && (isOwner(userId) || isAdmin());
+        allow list: if isValidId(userId) && (isOwner(userId) || isAdmin());
+
+        allow create: if isValidId(userId) && isValidId(locationId) &&
+          isOwner(userId) &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          isValidSavedLocation(incoming(), userId) &&
+          incoming().createdAt == request.time;
+
+        allow update: if isValidId(userId) && isValidId(locationId) &&
+          isValidSavedLocation(incoming(), userId) &&
+          incoming().uid == existing().uid &&
+          incoming().createdAt == existing().createdAt && (
+            isAdmin() ||
+            (
+              isOwner(userId) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['isPrimary', 'name', 'country', 'admin1', 'timezone'])
+            )
+          );
+
+        allow delete: if isValidId(userId) && isValidId(locationId) && (isOwner(userId) || isAdmin());
+      }
+
+      // Custom Weather Alert Rules
+      match /alerts/{alertId} {
+        allow get: if isValidId(userId) && isValidId(alertId) && (isOwner(userId) || isAdmin());
+        allow list: if isValidId(userId) && (isOwner(userId) || isAdmin());
+
+        allow create: if isValidId(userId) && isValidId(alertId) &&
+          isOwner(userId) &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          isValidWeatherAlertRule(incoming(), userId) &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isValidId(userId) && isValidId(alertId) &&
+          isValidWeatherAlertRule(incoming(), userId) &&
+          incoming().uid == existing().uid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time && (
+            isAdmin() ||
+            (
+              isOwner(userId) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['threshold', 'enabled', 'metric', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isValidId(userId) && isValidId(alertId) && (isOwner(userId) || isAdmin());
+      }
+    }
+
+    // Subscriptions & Paid Add-ons
+    match /subscriptions/{subscriptionId} {
+      allow get: if isValidId(subscriptionId) && isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      allow create: if isValidId(subscriptionId) &&
+        isSignedIn() &&
+        isValidSubscription(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'active' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isValidId(subscriptionId) &&
+        isSignedIn() &&
+        isValidSubscription(incoming()) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (
+            existing().userId == request.auth.uid &&
+            existing().status != 'cancelled' &&
+            incoming().status == 'cancelled' &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+          )
+        );
+
+      allow delete: if isValidId(subscriptionId) && isAdmin();
+    }
+
+    // Ad Campaigns & Sponsorships
+    match /ad_campaigns/{campaignId} {
+      allow get: if isValidId(campaignId) && (resource.data.active == true || isAdmin());
+      allow list: if resource.data.active == true || isAdmin();
+
+      allow create: if isValidId(campaignId) &&
+        isAdmin() &&
+        isValidAdCampaign(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isValidId(campaignId) &&
+        isValidAdCampaign(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (
+            isSignedIn() &&
+            existing().active == true &&
+            incoming().impressions == existing().impressions + 1 &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['impressions', 'updatedAt'])
+          ) ||
+          (
+            isSignedIn() &&
+            existing().active == true &&
+            incoming().clicks == existing().clicks + 1 &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['clicks', 'updatedAt'])
+          )
+        );
+
+      allow delete: if isValidId(campaignId) && isAdmin();
+    }
+
+    // Owner Revenue Ledger
+    match /revenue_events/{eventId} {
+      allow get: if isValidId(eventId) && isAdmin();
+      allow list: if isAdmin();
+
+      allow create: if isValidId(eventId) &&
+        isSignedIn() &&
+        isValidRevenueEvent(incoming()) &&
+        incoming().createdAt == request.time && (
+          isAdmin() ||
+          (
+            incoming().userId == request.auth.uid &&
+            incoming().amountUsd <= 500
+          )
+        );
+
+      allow update: if isValidId(eventId) &&
+        isAdmin() &&
+        isValidRevenueEvent(incoming()) &&
+        incoming().createdAt == existing().createdAt;
+
+      allow delete: if isValidId(eventId) && isAdmin();
+    }
+
+    // Global App Settings
+    match /app_config/{configId} {
+      allow get: if isValidId(configId);
+      allow list: if isAdmin();
+
+      allow create: if isValidId(configId) &&
+        isAdmin() &&
+        isValidAppSettings(incoming()) &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isValidId(configId) &&
+        isAdmin() &&
+        isValidAppSettings(incoming()) &&
+        incoming().updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    // Admins Allowlist
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (isOwner(adminId) || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isValidId(adminId) &&
+        isAdmin() &&
+        isValidAdminRecord(incoming(), adminId) &&
+        incoming().addedAt == request.time;
+
+      allow update: if false;
+      allow delete: if isValidId(adminId) && isAdmin();
+    }
+  }
+}

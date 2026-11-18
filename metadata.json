@@ -1,0 +1,6 @@
+{
+  "name": "CLIMORA – Smart Weather & Prediction App",
+  "description": "Every Forecast, A New Colour. A vibrant, colour-changing weather and smart prediction platform with worldwide forecasts, severe weather alerts, premium plans, and an owner earnings console.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

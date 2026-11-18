@@ -1,0 +1,390 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "Operational user profile, preferences, and subscription plan (non-PII).",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "pro_monthly", "pro_annual"]
+        },
+        "preferredUnit": {
+          "type": "string",
+          "enum": ["metric", "imperial"]
+        },
+        "preferredLang": {
+          "type": "string",
+          "enum": ["en", "es", "fr", "pt", "de", "ja"]
+        },
+        "chromaTheme": {
+          "type": "string",
+          "enum": ["aurora", "prism", "solar", "oceanic"]
+        },
+        "lastActiveAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "plan", "preferredUnit", "preferredLang", "chromaTheme", "lastActiveAt", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Strictly isolated personally identifiable information (email, phone, full name).",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 32
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "fullName", "email", "phone", "updatedAt"]
+    },
+    "SavedLocation": {
+      "title": "SavedLocation",
+      "description": "A user's saved city or town for quick weather monitoring.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "admin1": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "isPrimary": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "name", "country", "admin1", "latitude", "longitude", "timezone", "isPrimary", "createdAt"]
+    },
+    "WeatherAlertRule": {
+      "title": "WeatherAlertRule",
+      "description": "Custom threshold notification rule for severe weather alerts.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "locationName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "metric": {
+          "type": "string",
+          "enum": ["rain_prob", "wind_speed", "temp_high", "temp_low", "storm"]
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "locationName", "latitude", "longitude", "metric", "threshold", "enabled", "createdAt", "updatedAt"]
+    },
+    "SubscriptionRecord": {
+      "title": "SubscriptionRecord",
+      "description": "Premium subscription or paid add-on record.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "planId": {
+          "type": "string",
+          "enum": ["pro_monthly", "pro_annual", "storm_radar_pack", "ad_free_pass"]
+        },
+        "amountUsd": {
+          "type": "number"
+        },
+        "billingCycle": {
+          "type": "string",
+          "enum": ["monthly", "annual", "one_time"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "planId", "amountUsd", "billingCycle", "status", "createdAt", "updatedAt"]
+    },
+    "AdCampaign": {
+      "title": "AdCampaign",
+      "description": "Sponsored weather unit or advertisement campaign managed by the app owner.",
+      "type": "object",
+      "properties": {
+        "sponsorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "headline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "ctaLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "targetUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "cpmUsd": {
+          "type": "number"
+        },
+        "cpcUsd": {
+          "type": "number"
+        },
+        "impressions": {
+          "type": "number"
+        },
+        "clicks": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["sponsorName", "headline", "description", "ctaLabel", "targetUrl", "cpmUsd", "cpcUsd", "impressions", "clicks", "active", "createdAt", "updatedAt"]
+    },
+    "RevenueEvent": {
+      "title": "RevenueEvent",
+      "description": "Owner earnings ledger entry from subscriptions, ads, sponsorships, or paid add-ons.",
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["subscription", "ad_impression", "ad_click", "sponsorship", "paid_addon"]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "amountUsd": {
+          "type": "number"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["source", "label", "amountUsd", "userId", "createdAt"]
+    },
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "Global application configuration controlled by the app owner.",
+      "type": "object",
+      "properties": {
+        "adsEnabled": {
+          "type": "boolean"
+        },
+        "proMonthlyPrice": {
+          "type": "number"
+        },
+        "proAnnualPrice": {
+          "type": "number"
+        },
+        "defaultForecastDays": {
+          "type": "number"
+        },
+        "announcement": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 240
+        },
+        "maintenanceMode": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["adsEnabled", "proMonthlyPrice", "proAnnualPrice", "defaultForecastDays", "announcement", "maintenanceMode", "updatedAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Explicit admin allowlist record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "addedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserAccount" },
+      "description": "Non-PII user preferences and subscription tier."
+    },
+    "/users/{userId}/private/info": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Isolated user PII (name, email, phone number)."
+    },
+    "/users/{userId}/locations/{locationId}": {
+      "schema": { "$ref": "#/entities/SavedLocation" },
+      "description": "Saved worldwide weather locations per user."
+    },
+    "/users/{userId}/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/WeatherAlertRule" },
+      "description": "Custom weather alert threshold rules per user."
+    },
+    "/subscriptions/{subscriptionId}": {
+      "schema": { "$ref": "#/entities/SubscriptionRecord" },
+      "description": "Premium subscriptions and paid add-ons."
+    },
+    "/ad_campaigns/{campaignId}": {
+      "schema": { "$ref": "#/entities/AdCampaign" },
+      "description": "Active sponsorship and ad campaigns."
+    },
+    "/revenue_events/{eventId}": {
+      "schema": { "$ref": "#/entities/RevenueEvent" },
+      "description": "Owner earnings ledger across ads, subscriptions, and sponsorships."
+    },
+    "/app_config/{configId}": {
+      "schema": { "$ref": "#/entities/AppSettings" },
+      "description": "Global application settings managed by admin."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Explicit admin allowlist."
+    }
+  }
+}

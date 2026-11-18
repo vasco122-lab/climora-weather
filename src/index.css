@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+@property --chroma-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@layer base {
+  :root {
+    --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --chroma-c1: #22d3ee;
+    --chroma-c2: #a855f7;
+    --chroma-c3: #ec4899;
+    --chroma-c4: #f59e0b;
+    --chroma-c5: #10b981;
+  }
+
+  [data-chroma="prism"] {
+    --chroma-c1: #38bdf8;
+    --chroma-c2: #f472b6;
+    --chroma-c3: #facc15;
+    --chroma-c4: #4ade80;
+    --chroma-c5: #818cf8;
+  }
+
+  [data-chroma="solar"] {
+    --chroma-c1: #fb7185;
+    --chroma-c2: #fb923c;
+    --chroma-c3: #facc15;
+    --chroma-c4: #f43f5e;
+    --chroma-c5: #c084fc;
+  }
+
+  [data-chroma="oceanic"] {
+    --chroma-c1: #06b6d4;
+    --chroma-c2: #3b82f6;
+    --chroma-c3: #34d399;
+    --chroma-c4: #818cf8;
+    --chroma-c5: #2dd4bf;
+  }
+
+  html {
+    background-color: #050814;
+    color: #f1f5f9;
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #050814;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes chroma-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes chroma-spin {
+  to {
+    --chroma-angle: 360deg;
+  }
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: translate3d(2%, -2%, 0) scale(1.06);
+    filter: hue-rotate(140deg);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes weather-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes slow-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rain-drop {
+  0% {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+@keyframes bolt-pulse {
+  0%, 82%, 100% {
+    opacity: 0.45;
+  }
+  86%, 92% {
+    opacity: 1;
+  }
+}
+
+.aurora-backdrop {
+  background:
+    radial-gradient(60% 45% at 15% 15%, color-mix(in srgb, var(--chroma-c1) 24%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 85% 20%, color-mix(in srgb, var(--chroma-c2) 24%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 65% 80%, color-mix(in srgb, var(--chroma-c3) 20%, transparent), transparent 70%),
+    radial-gradient(45% 40% at 20% 85%, color-mix(in srgb, var(--chroma-c5) 20%, transparent), transparent 70%);
+  animation: aurora-drift 22s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.chroma-text {
+  background: linear-gradient(
+    90deg,
+    var(--chroma-c1),
+    var(--chroma-c2),
+    var(--chroma-c3),
+    var(--chroma-c4),
+    var(--chroma-c5),
+    var(--chroma-c1)
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: chroma-flow 8s ease infinite;
+}
+
+.chroma-surface {
+  position: relative;
+  background: rgba(10, 15, 30, 0.78);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chroma-surface::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--chroma-angle),
+    var(--chroma-c1),
+    var(--chroma-c2),
+    var(--chroma-c3),
+    var(--chroma-c4),
+    var(--chroma-c5),
+    var(--chroma-c1)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.42;
+  pointer-events: none;
+  animation: chroma-spin 9s linear infinite;
+}
+
+.chroma-surface-bright::before {
+  opacity: 0.72;
+}
+
+.chroma-btn {
+  background: linear-gradient(
+    110deg,
+    var(--chroma-c1),
+    var(--chroma-c2),
+    var(--chroma-c3),
+    var(--chroma-c4),
+    var(--chroma-c1)
+  );
+  background-size: 280% 280%;
+  animation: chroma-flow 6s ease infinite;
+  color: #050814;
+  font-weight: 700;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), filter 150ms ease;
+}
+
+.chroma-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.chroma-btn:active {
+  transform: translateY(0px);
+}
+
+.chroma-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--chroma-c1),
+    var(--chroma-c2),
+    var(--chroma-c3),
+    var(--chroma-c4),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: chroma-flow 9s ease infinite;
+  opacity: 0.45;
+}
+
+.animate-weather-float {
+  animation: weather-float 4.5s ease-in-out infinite;
+}
+
+.animate-slow-rotate {
+  animation: slow-rotate 18s linear infinite;
+  transform-origin: center;
+}
+
+.animate-rain-drop {
+  animation: rain-drop 1.4s linear infinite;
+}
+
+.animate-bolt-pulse {
+  animation: bolt-pulse 2.8s ease-in-out infinite;
+}
+
+[data-motion="calm"] .aurora-backdrop {
+  animation-duration: 45s;
+}
+
+[data-motion="calm"] .chroma-text,
+[data-motion="calm"] .chroma-btn,
+[data-motion="calm"] .chroma-surface::before {
+  animation-duration: 18s;
+}
+
+[data-motion="static"] .aurora-backdrop,
+[data-motion="static"] .chroma-text,
+[data-motion="static"] .chroma-btn,
+[data-motion="static"] .chroma-surface::before,
+[data-motion="static"] .chroma-divider,
+[data-motion="static"] .animate-weather-float,
+[data-motion="static"] .animate-slow-rotate,
+[data-motion="static"] .animate-rain-drop,
+[data-motion="static"] .animate-bolt-pulse {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-backdrop,
+  .chroma-text,
+  .chroma-btn,
+  .chroma-surface::before,
+  .chroma-divider,
+  .animate-weather-float,
+  .animate-slow-rotate,
+  .animate-rain-drop,
+  .animate-bolt-pulse {
+    animation: none !important;
+  }
+}
